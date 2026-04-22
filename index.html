@@ -114,7 +114,7 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useRef } = React;
 
     /* ─── HOOKS ─────────────────────────────────── */
     const useReveal = () => {
@@ -223,6 +223,13 @@
     /* ─── HERO ───────────────────────────────────── */
     const Hero = () => {
       const [hov, setHov] = useState(false);
+      const videoRef = useRef(null);
+      useEffect(() => {
+        const v = videoRef.current;
+        if (!v) return;
+        v.muted = true;
+        v.play().catch(() => {});
+      }, []);
       return (
         <section style={{
           minHeight: '100vh',
@@ -233,7 +240,7 @@
           position: 'relative', overflow: 'hidden',
         }}>
           {/* Video background */}
-          <video autoPlay loop muted playsInline style={{
+          <video ref={videoRef} autoPlay loop muted playsInline style={{
             position: 'absolute', inset: 0,
             width: '100%', height: '100%',
             objectFit: 'cover', zIndex: 0,
