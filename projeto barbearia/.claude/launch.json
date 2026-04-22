@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ducorte",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8787", "--directory", "C:\\Users\\caua\\Downloads\\projeto barbearia"],
+      "port": 8787
+    }
+  ]
+}

@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="DuCorte Barbearia — Corte, barba e química de alto nível. Uberaba MG." />
+  <title>DuCorte Barbearia — Uberaba MG</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- React 18 -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Space Grotesk"', 'sans-serif'],
+            display: ['Syne', 'sans-serif'],
+          },
+          colors: {
+            coal: '#0a0a0a',
+            cream: '#f4f2eb',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: #0a0a0a; color: #f4f2eb; overflow-x: hidden; }
+
+    ::-webkit-scrollbar { width: 2px; }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
+    ::-webkit-scrollbar-thumb { background: rgba(244,242,235,0.18); }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(44px);
+      transition: opacity 1s cubic-bezier(0.16,1,0.3,1),
+                  transform 1s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: 0.10s; }
+    .reveal-d2 { transition-delay: 0.22s; }
+    .reveal-d3 { transition-delay: 0.34s; }
+    .reveal-d4 { transition-delay: 0.46s; }
+
+    /* Marquee */
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .ticker-inner {
+      display: inline-flex;
+      white-space: nowrap;
+      animation: ticker 22s linear infinite;
+    }
+
+    /* Scroll cue animation */
+    @keyframes pulse-line {
+      0%   { transform: scaleY(0); transform-origin: top;    opacity: 1; }
+      49%  { transform: scaleY(1); transform-origin: top;    opacity: 1; }
+      50%  { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
+      100% { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+    }
+    .scroll-cue { animation: pulse-line 2.2s ease infinite; }
+
+    /* Gallery mobile override */
+    @media (max-width: 720px) {
+      .gallery-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    }
+
+    /* Service vertical dividers hide on mobile */
+    @media (max-width: 760px) {
+      .svc-divider { border-right: none !important; }
+    }
+
+    /* ── Mobile safety net ── */
+
+    /* Prevenção global de overflow horizontal */
+    html, body { overflow-x: hidden; }
+
+    /* Quebra palavras longas em todos os headings antes de vazar a tela */
+    h1, h2, h3 { overflow-wrap: break-word; word-break: break-word; }
+
+    @media (max-width: 480px) {
+      section, footer, nav { max-width: 100vw; overflow-x: hidden; }
+
+      /* Titles das seções (ESPECIALIDADES, NOSSA EQUIPE…) */
+      .sec-title { font-size: clamp(26px, 9vw, 76px) !important; }
+
+      /* CTA do footer (MARCA O HORÁRIO) */
+      .cta-headline { font-size: clamp(28px, 11vw, 144px) !important; }
+
+      /* Botões: padding menor em telas muito pequenas */
+      .btn-main { padding: 14px 28px !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    /* ─── HOOKS ─────────────────────────────────── */
+    const useReveal = () => {
+      useEffect(() => {
+        const io = new IntersectionObserver(
+          (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add('in')),
+          { threshold: 0.07, rootMargin: '0px 0px -36px 0px' }
+        );
+        document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+        return () => io.disconnect();
+      }, []);
+    };
+
+    const useScrolled = () => {
+      const [s, setS] = useState(false);
+      useEffect(() => {
+        const fn = () => setS(window.scrollY > 56);
+        window.addEventListener('scroll', fn, { passive: true });
+        return () => window.removeEventListener('scroll', fn);
+      }, []);
+      return s;
+    };
+
+    /* ─── SVG ICONS ─────────────────────────────── */
+    const IconIG = () => (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="2" width="20" height="20" rx="5" />
+        <circle cx="12" cy="12" r="4" />
+        <circle cx="17.5" cy="6.5" r=".5" fill="currentColor" stroke="none" />
+      </svg>
+    );
+
+    const IconWA = () => (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a8 8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
+      </svg>
+    );
+
+    const IconPin = ({ size = 14 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+    );
+
+    /* ─── SHARED STYLE TOKENS ────────────────────── */
+    const LABEL = {
+      fontFamily: '"Space Grotesk", sans-serif',
+      fontSize: '10px',
+      letterSpacing: '0.44em',
+      textTransform: 'uppercase',
+      color: 'rgba(244,242,235,0.28)',
+    };
+
+    const SEC_H2 = {
+      fontFamily: 'Syne, sans-serif',
+      fontWeight: 800,
+      textTransform: 'uppercase',
+      letterSpacing: '-0.015em',
+      lineHeight: 0.93,
+      color: '#f4f2eb',
+      fontSize: 'clamp(26px, 6.5vw, 76px)',
+      overflowWrap: 'break-word',
+      wordBreak: 'break-word',
+    };
+
+    /* Classe helper para as h2 de seção receberem o override mobile via CSS */
+    const SEC_H2_CLS = 'sec-title';
+
+    /* ─── NAV ────────────────────────────────────── */
+    const Nav = () => {
+      const scrolled = useScrolled();
+      return (
+        <nav style={{
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 999,
+          padding: '22px clamp(20px, 5vw, 56px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          borderBottom: `1px solid rgba(244,242,235,${scrolled ? 0.07 : 0})`,
+          background: scrolled ? 'rgba(10,10,10,0.9)' : 'transparent',
+          backdropFilter: scrolled ? 'blur(18px)' : 'none',
+          transition: 'background 0.4s, border-color 0.4s',
+        }}>
+          <span style={{ ...LABEL, color: 'rgba(244,242,235,0.4)' }}>
+            UBERABA — MG
+          </span>
+          <div style={{ display: 'flex', gap: '22px', alignItems: 'center' }}>
+            {[
+              { href: 'https://www.instagram.com/ducortebarbearia1/', label: 'Instagram', Icon: IconIG },
+              { href: 'https://wa.me/5534999999999', label: 'WhatsApp', Icon: IconWA },
+            ].map(({ href, label, Icon }) => (
+              <a key={label} href={href} target="_blank" rel="noopener noreferrer"
+                aria-label={label}
+                style={{ color: '#f4f2eb', opacity: 0.45, transition: 'opacity 0.2s', display: 'flex' }}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = 0.45)}>
+                <Icon />
+              </a>
+            ))}
+          </div>
+        </nav>
+      );
+    };
+
+    /* ─── HERO ───────────────────────────────────── */
+    const Hero = () => {
+      const [hov, setHov] = useState(false);
+      return (
+        <section style={{
+          minHeight: '100vh',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          textAlign: 'center',
+          padding: 'clamp(100px,14vh,160px) clamp(20px,5vw,60px) 80px',
+          position: 'relative', overflow: 'hidden',
+        }}>
+          {/* Video background */}
+          <video autoPlay loop muted playsInline style={{
+            position: 'absolute', inset: 0,
+            width: '100%', height: '100%',
+            objectFit: 'cover', zIndex: 0,
+          }}>
+            <source src="./video-ducorte.mp4" type="video/mp4" />
+          </video>
+
+          {/* Dark overlay — garante legibilidade sobre o vídeo */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'rgba(0,0,0,0.72)',
+            zIndex: 1,
+          }} />
+
+          {/* Splatter texture */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: 'url(./texture-splatter.png)',
+            backgroundSize: 'cover', backgroundPosition: 'center',
+            opacity: 0.08, pointerEvents: 'none', zIndex: 2,
+          }} />
+
+          {/* Radial glow */}
+          <div style={{
+            position: 'absolute', top: '45%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 'min(760px, 95vw)', height: 'min(760px, 95vw)',
+            background: 'radial-gradient(ellipse, rgba(244,242,235,0.05) 0%, transparent 62%)',
+            pointerEvents: 'none', zIndex: 2,
+          }} />
+
+          {/* Logo */}
+          <img
+            src="./logo_principal.png"
+            alt="DuCorte Barbearia"
+            style={{
+              width: 'clamp(220px, 38vw, 490px)',
+              position: 'relative', zIndex: 3,
+              marginBottom: '52px',
+              filter: 'drop-shadow(0 0 80px rgba(244,242,235,0.12))',
+            }}
+          />
+
+          {/* Copy */}
+          <div style={{ position: 'relative', zIndex: 3, maxWidth: '700px' }}>
+            <h1 style={{
+              fontFamily: 'Syne, sans-serif',
+              fontSize: 'clamp(18px, 3vw, 38px)',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.065em',
+              lineHeight: 1.25,
+              color: '#f4f2eb',
+            }}>
+              MUITO ALÉM DA ESTÉTICA.
+              <br />
+              <span style={{ color: 'rgba(244,242,235,0.5)' }}>
+                A CULTURA DAS RUAS NA RÉGUA.
+              </span>
+            </h1>
+
+            {/* Divider */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '18px',
+              margin: '40px 0', justifyContent: 'center',
+            }}>
+              <span style={{ flex: 1, maxWidth: '72px', height: '1px', background: 'rgba(244,242,235,0.2)' }} />
+              <img
+                src="./ducorte_pequeno.png"
+                alt=""
+                style={{ height: '20px', opacity: 0.22, filter: 'invert(1)' }}
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+              />
+              <span style={{ flex: 1, maxWidth: '72px', height: '1px', background: 'rgba(244,242,235,0.2)' }} />
+            </div>
+
+            <a
+              href="https://nextgoagenda.com/yurizinducorte"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-block',
+                padding: '17px 52px',
+                fontFamily: '"Space Grotesk", sans-serif',
+                fontSize: '10px', fontWeight: 700,
+                letterSpacing: '0.32em', textTransform: 'uppercase',
+                textDecoration: 'none',
+                border: '1px solid #f4f2eb',
+                background: hov ? 'transparent' : '#f4f2eb',
+                color: hov ? '#f4f2eb' : '#0a0a0a',
+                transition: 'background 0.25s, color 0.25s',
+              }}
+              onMouseEnter={() => setHov(true)}
+              onMouseLeave={() => setHov(false)}
+            >
+              AGENDAR HORÁRIO
+            </a>
+          </div>
+
+          {/* Scroll cue */}
+          <div style={{
+            position: 'absolute', bottom: '40px', left: '50%',
+            transform: 'translateX(-50%)', zIndex: 3,
+          }}>
+            <div className="scroll-cue" style={{
+              width: '1px', height: '48px',
+              background: 'rgba(244,242,235,0.3)',
+            }} />
+          </div>
+        </section>
+      );
+    };
+
+    /* ─── MARQUEE ────────────────────────────────── */
+    const Marquee = () => {
+      const t = 'DU CORTE  ✦  BARBEARIA  ✦  UBERABA MG  ✦  CORTE  ✦  BARBA  ✦  QUÍMICA  ✦  ';
+      const chunk = t.repeat(5);
+      return (
+        <div style={{
+          overflow: 'hidden',
+          borderTop: '1px solid rgba(244,242,235,0.07)',
+          borderBottom: '1px solid rgba(244,242,235,0.07)',
+          padding: '14px 0',
+          background: '#070707',
+        }}>
+          <div className="ticker-inner">
+            {[0, 1].map((k) => (
+              <span key={k} style={{
+                fontFamily: '"Space Grotesk", sans-serif',
+                fontSize: '10px', letterSpacing: '0.28em',
+                textTransform: 'uppercase',
+                color: 'rgba(244,242,235,0.17)',
+              }}>
+                {chunk}
+              </span>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    /* ─── SERVICES ───────────────────────────────── */
+    const SERVICES = [
+      {
+        icon: './icone_1.png',
+        iconStyle: { filter: 'invert(1) brightness(0.92)' },
+        num: '01',
+        title: 'Corte & Estilo',
+        desc: 'Do clássico ao freestyle com acabamento cirúrgico. Cada linha tem intenção.',
+      },
+      {
+        icon: './icone_2.png',
+        iconStyle: { filter: 'brightness(0.82)' },
+        num: '02',
+        title: 'Barba Premium',
+        desc: 'Alinhamento, toalha quente e navalha. O ritual completo.',
+      },
+      {
+        icon: './icone_3.png',
+        iconStyle: { filter: 'invert(1) contrast(1.2) brightness(0.9)' },
+        num: '03',
+        title: 'Química',
+        desc: 'Platinados, luzes e pigmentação de alto nível. Cor como expressão.',
+      },
+    ];
+
+    const SvcCard = ({ s, i }) => {
+      const [hov, setHov] = useState(false);
+      const isLast = i === SERVICES.length - 1;
+      return (
+        <div
+          className={`reveal reveal-d${i + 1} svc-divider`}
+          style={{
+            padding: 'clamp(40px,6vw,64px) clamp(24px,4vw,48px)',
+            borderRight: !isLast
+              ? `1px solid rgba(244,242,235,${hov ? 0.26 : 0.09})`
+              : 'none',
+            transition: 'border-color 0.3s',
+            cursor: 'default',
+          }}
+          onMouseEnter={() => setHov(true)}
+          onMouseLeave={() => setHov(false)}
+        >
+          <img
+            src={s.icon}
+            alt={s.title}
+            style={{
+              width: '70px', height: '70px',
+              objectFit: 'contain',
+              marginBottom: '36px',
+              transition: 'transform 0.45s cubic-bezier(0.16,1,0.3,1)',
+              transform: hov ? 'scale(1.07)' : 'scale(1)',
+              ...s.iconStyle,
+            }}
+          />
+          <p style={{ ...LABEL, marginBottom: '10px' }}>{s.num}</p>
+          <h3 style={{
+            fontFamily: 'Syne, sans-serif',
+            fontSize: 'clamp(22px,2.6vw,34px)',
+            fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '0.03em', lineHeight: 1.05,
+            color: '#f4f2eb', marginBottom: '16px',
+          }}>
+            {s.title}
+          </h3>
+          <p style={{
+            fontFamily: '"Space Grotesk", sans-serif',
+            fontSize: '13px', fontWeight: 300,
+            letterSpacing: '0.025em',
+            color: 'rgba(244,242,235,0.36)',
+            lineHeight: 1.8, fontStyle: 'italic',
+          }}>
+            {s.desc}
+          </p>
+        </div>
+      );
+    };
+
+    const Services = () => (
+      <section id="servicos" style={{
+        padding: 'clamp(80px,12vh,140px) clamp(20px,5vw,56px)',
+        background: '#0c0c0c',
+      }}>
+        <div className="reveal" style={{ marginBottom: '72px' }}>
+          <p style={{ ...LABEL, marginBottom: '14px' }}>01 — A ARTE</p>
+          <h2 className={SEC_H2_CLS} style={SEC_H2}>ESPECIALIDADES</h2>
+        </div>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
+          borderTop: '1px solid rgba(244,242,235,0.09)',
+        }}>
+          {SERVICES.map((s, i) => <SvcCard key={s.num} s={s} i={i} />)}
+        </div>
+      </section>
+    );
+
+    /* ─── TEAM ───────────────────────────────────── */
+    const BARBERS = [
+      { name: 'YURI',  img: './yuri.jpeg'  },
+      { name: 'JONES', img: './jones.jpeg' },
+      { name: 'KAUÃ',  img: './kaua.jpeg'  },
+      { name: 'GODOY', img: './godoy.jpeg' },
+    ];
+
+    const BarberCard = ({ barber, delay }) => {
+      const [hov, setHov] = useState(false);
+      return (
+        <div
+          className={`reveal ${delay}`}
+          style={{ cursor: 'default' }}
+          onMouseEnter={() => setHov(true)}
+          onMouseLeave={() => setHov(false)}
+        >
+          {/* Foto com aspect-ratio 4/5 (formato Instagram retrato) */}
+          <div style={{
+            aspectRatio: '4/5',
+            overflow: 'hidden',
+            marginBottom: '18px',
+            backgroundColor: '#1a1a1a',
+          }}>
+            <img
+              src={barber.img}
+              alt={barber.name}
+              style={{
+                width: '100%', height: '100%',
+                objectFit: 'cover',
+                filter: hov ? 'grayscale(0%)' : 'grayscale(100%)',
+                transform: hov ? 'scale(1.05)' : 'scale(1)',
+                transition: 'filter 0.5s ease, transform 0.65s cubic-bezier(0.16,1,0.3,1)',
+              }}
+              onError={(e) => {
+                e.currentTarget.parentElement.style.background = '#1a1a1a';
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+          <h3 style={{
+            fontFamily: 'Syne, sans-serif',
+            fontSize: 'clamp(20px, 2.5vw, 28px)',
+            fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            color: '#f4f2eb', marginBottom: '6px',
+          }}>
+            {barber.name}
+          </h3>
+          <p style={{ ...LABEL, color: 'rgba(244,242,235,0.28)' }}>BARBEIRO</p>
+        </div>
+      );
+    };
+
+    const Team = () => (
+      <section id="equipe" style={{
+        padding: 'clamp(80px,12vh,140px) clamp(20px,5vw,56px)',
+        background: '#0a0a0a',
+      }}>
+        <div className="reveal" style={{ marginBottom: '72px' }}>
+          <p style={{ ...LABEL, marginBottom: '14px' }}>02 — A BANCA</p>
+          <h2 className={SEC_H2_CLS} style={SEC_H2}>NOSSA EQUIPE</h2>
+        </div>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))',
+          gap: 'clamp(16px, 3vw, 36px)',
+        }}>
+          {BARBERS.map((b, i) => (
+            <BarberCard key={b.name} barber={b} delay={`reveal-d${Math.min(i + 1, 4)}`} />
+          ))}
+        </div>
+      </section>
+    );
+
+    /* ─── GALLERY ────────────────────────────────── */
+    const GALLERY_IMGS = [
+      './corte_1.png', './corte_2.png', './corte_3.png', './corte_4.png',
+      './corte_5.png', './corte_6.png', './corte_7.png', './corte_8.png',
+    ];
+
+    const GalleryBlock = ({ img }) => {
+      const [hov, setHov] = useState(false);
+      return (
+        <div
+          style={{
+            position: 'relative',
+            aspectRatio: '1/1',
+            overflow: 'hidden',
+            backgroundColor: '#1a1a1a',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={() => setHov(true)}
+          onMouseLeave={() => setHov(false)}
+        >
+          {/* Foto com zoom no hover */}
+          <img
+            src={img}
+            alt=""
+            style={{
+              width: '100%', height: '100%',
+              objectFit: 'cover',
+              transform: hov ? 'scale(1.1)' : 'scale(1)',
+              transition: 'transform 0.65s cubic-bezier(0.16,1,0.3,1)',
+              display: 'block',
+            }}
+          />
+          {/* Overlay escuro + handle do Instagram */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'rgba(0,0,0,0.6)',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: '10px',
+            opacity: hov ? 1 : 0,
+            transition: 'opacity 0.35s ease',
+          }}>
+            <IconIG />
+            <span style={{
+              fontFamily: '"Space Grotesk", sans-serif',
+              fontSize: '10px', letterSpacing: '0.28em',
+              textTransform: 'uppercase',
+              color: '#f4f2eb',
+            }}>
+              @DUCORTEBARBEARIA
+            </span>
+          </div>
+        </div>
+      );
+    };
+
+    const Gallery = () => {
+      const [hovIG, setHovIG] = useState(false);
+      return (
+        <section id="cultura" style={{
+          padding: 'clamp(80px,12vh,140px) clamp(20px,5vw,56px)',
+          background: '#0c0c0c',
+        }}>
+          <div className="reveal" style={{ marginBottom: '72px' }}>
+            <p style={{ ...LABEL, marginBottom: '14px' }}>03 — A CULTURA</p>
+            <h2 className={SEC_H2_CLS} style={SEC_H2}>
+              DUCORTE<br />
+              <span style={{ color: 'rgba(244,242,235,0.2)' }}>NAS RUAS</span>
+            </h2>
+          </div>
+
+          {/* Grid uniforme: 4 colunas no desktop, 2 no mobile */}
+          <div className="reveal gallery-grid" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '4px',
+          }}>
+            {GALLERY_IMGS.map((img, i) => <GalleryBlock key={i} img={img} />)}
+          </div>
+
+          <div className="reveal" style={{ textAlign: 'center', marginTop: '52px' }}>
+            <a
+              href="https://www.instagram.com/ducortebarbearia1/"
+              target="_blank" rel="noopener noreferrer"
+              style={{
+                fontFamily: '"Space Grotesk", sans-serif',
+                fontSize: '10px', letterSpacing: '0.34em',
+                textTransform: 'uppercase',
+                color: hovIG ? '#f4f2eb' : 'rgba(244,242,235,0.3)',
+                textDecoration: 'none',
+                borderBottom: `1px solid ${hovIG ? '#f4f2eb' : 'rgba(244,242,235,0.13)'}`,
+                paddingBottom: '3px',
+                transition: 'color 0.25s, border-color 0.25s',
+              }}
+              onMouseEnter={() => setHovIG(true)}
+              onMouseLeave={() => setHovIG(false)}
+            >
+              @DUCORTEBARBEARIA NO INSTAGRAM
+            </a>
+          </div>
+        </section>
+      );
+    };
+
+    /* ─── FOOTER ─────────────────────────────────── */
+    const Footer = () => {
+      const [hovCTA, setHovCTA] = useState(false);
+      const [hovMap, setHovMap] = useState(false);
+      return (
+        <footer style={{ background: '#080808', borderTop: '1px solid rgba(244,242,235,0.05)' }}>
+
+          {/* Big CTA block */}
+          <div style={{
+            padding: 'clamp(80px,14vh,160px) clamp(20px,5vw,60px)',
+            textAlign: 'center',
+            position: 'relative', overflow: 'hidden',
+          }}>
+            <div style={{
+              position: 'absolute', inset: 0,
+              backgroundImage: 'url(./texture-splatter.png)',
+              backgroundSize: 'cover', backgroundPosition: 'center',
+              opacity: 0.08, pointerEvents: 'none',
+            }} />
+            <div className="reveal" style={{ position: 'relative' }}>
+              <p style={{ ...LABEL, marginBottom: '36px' }}>
+                PRONTO PRA ELEVAR O NÍVEL?
+              </p>
+              <h2 className="cta-headline" style={{
+                fontFamily: 'Syne, sans-serif',
+                fontSize: 'clamp(46px,12vw,144px)',
+                fontWeight: 800, textTransform: 'uppercase',
+                letterSpacing: '-0.025em',
+                color: '#f4f2eb', lineHeight: 0.86,
+                marginBottom: '64px',
+              }}>
+                MARCA<br />O HORÁRIO.
+              </h2>
+              <a
+                href="https://nextgoagenda.com/yurizinducorte"
+                target="_blank" rel="noopener noreferrer"
+                className="btn-main"
+                style={{
+                  display: 'inline-block',
+                  padding: '17px 52px',
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontSize: '10px', fontWeight: 700,
+                  letterSpacing: '0.32em', textTransform: 'uppercase',
+                  textDecoration: 'none',
+                  border: '1px solid #f4f2eb',
+                  background: hovCTA ? 'transparent' : '#f4f2eb',
+                  color: hovCTA ? '#f4f2eb' : '#0a0a0a',
+                  transition: 'background 0.25s, color 0.25s',
+                }}
+                onMouseEnter={() => setHovCTA(true)}
+                onMouseLeave={() => setHovCTA(false)}
+              >
+                AGENDAR HORÁRIO
+              </a>
+            </div>
+          </div>
+
+          {/* Info strip */}
+          <div style={{
+            padding: '44px clamp(20px,5vw,60px)',
+            borderTop: '1px solid rgba(244,242,235,0.05)',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', gap: '26px',
+          }}>
+            <img
+              src="./logo_principal.png"
+              alt="DuCorte Barbearia"
+              style={{ width: '106px', opacity: 0.4 }}
+            />
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '10px',
+              color: 'rgba(244,242,235,0.26)',
+            }}>
+              <IconPin />
+              <span style={{
+                fontFamily: '"Space Grotesk", sans-serif',
+                fontSize: '11px', letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+              }}>
+                RUA BARÃO DE ITUBERABA, 154 — ABADIA, UBERABA MG
+              </span>
+            </div>
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Rua+Bar%C3%A3o+de+Ituberaba,+154+Abadia+Uberaba+MG"
+              target="_blank" rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                padding: '12px 30px',
+                border: `1px solid rgba(244,242,235,${hovMap ? 0.65 : 0.14})`,
+                color: hovMap ? '#f4f2eb' : 'rgba(244,242,235,0.36)',
+                fontFamily: '"Space Grotesk", sans-serif',
+                fontSize: '10px', fontWeight: 600,
+                letterSpacing: '0.26em', textTransform: 'uppercase',
+                textDecoration: 'none',
+                transition: 'border-color 0.25s, color 0.25s',
+              }}
+              onMouseEnter={() => setHovMap(true)}
+              onMouseLeave={() => setHovMap(false)}
+            >
+              <IconPin size={12} /> COMO CHEGAR
+            </a>
+            <p style={{
+              fontFamily: '"Space Grotesk", sans-serif',
+              fontSize: '10px',
+              color: 'rgba(244,242,235,0.1)',
+              letterSpacing: '0.08em',
+              marginTop: '8px',
+            }}>
+              © 2025 DUCORTE BARBEARIA — TODOS OS DIREITOS RESERVADOS
+            </p>
+          </div>
+        </footer>
+      );
+    };
+
+    /* ─── APP ────────────────────────────────────── */
+    const App = () => {
+      useReveal();
+      return (
+        <div style={{ overflowX: 'hidden', maxWidth: '100vw' }}>
+          <Nav />
+          <Hero />
+          <Marquee />
+          <Services />
+          <Team />
+          <Gallery />
+          <Footer />
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
